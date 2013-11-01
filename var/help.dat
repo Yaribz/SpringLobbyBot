@@ -1,0 +1,19 @@
+[help]
+!help [<command>] - lists allowed commands (print examples for command <command> if <command> is specified)
+"!help" lists allowed commands
+"!help help" print examples for command help
+
+[helpall]
+!helpall - lists all commands
+
+[quit]
+!quit - forces bot to quit
+
+[reloadConf]
+!reloadConf - reloads configuration
+
+[restart]
+!restart - restarts bot
+
+[version]
+!version - requests versions of all bot components
