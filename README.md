@@ -8,11 +8,14 @@ Components
 * [SpringLobbyBot.pl](SpringLobbyBot.pl): Lobby bot application template
 * [SpringLobbyBotConf.pm](SpringLobbyBotConf.pm): Template module for bot
   configuration management.
-* [etc/commands.conf]: Configuration template for commands rights
-* [etc/levels.conf]: Configuration template for access levels
-* [etc/SpringLobbyBot.conf]: Global lobby bot configuration template
-* [etc/users.conf]: Configuration template for user access rights
-* [var/help.dat]: Commands help template for user access rights
+* [etc/commands.conf](etc/commands.conf): Configuration template for commands
+  rights
+* [etc/levels.conf](etc/levels.conf): Configuration template for access levels
+* [etc/SpringLobbyBot.conf](etc/SpringLobbyBot.conf): Global lobby bot
+  configuration template
+* [etc/users.conf](etc/users.conf): Configuration template for user access
+  rights
+* [var/help.dat](var/help.dat): Commands help template for user access rights
 
 Dependencies
 ------------
@@ -30,10 +33,10 @@ Usage
   lobby account used by the bot), etcDir (directory containing bot config files
   ), varDir (directory containing bot dynamic data), logDir (directory
   containing bot log files)
-* Replace <ownerAccountId> and <ownerName> by your actual Spring lobby account
+* Replace &lt;ownerAccountId&gt; and &lt;ownerName&gt; by your actual Spring lobby account
   ID and name (not those of the bot) in etc/users.conf
 * Edit the SpringLobbyBot.pl and SpringLobbyBotConf.pm files and replace
-  "SpringLobbyBot" by the true name of your bot application.
+  "SpringLobbyBot" by the true name of your bot application
 * Rename following files according to your bot application name:
   SpringLobbyBot.pl, SpringLobbyBotConf.pm, etc/SpringLobbyBot.conf
 * Launch the bot using command "./SpringLobbyBot.pl etc/SpringLobbyBot.conf"
