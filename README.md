@@ -15,7 +15,7 @@ Components
   configuration template
 * [etc/users.conf](etc/users.conf): Configuration template for user access
   rights
-* [var/help.dat](var/help.dat): Commands help template for user access rights
+* [var/help.dat](var/help.dat): Commands help template
 
 Dependencies
 ------------
