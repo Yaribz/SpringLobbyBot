@@ -32,7 +32,7 @@ use SpringLobbyBotConf;
 
 use SpringLobbyInterface;
 
-my $SpringLobbyBotVer='0.1';
+my $SpringLobbyBotVer='0.2';
 
 $SIG{TERM} = \&sigTermHandler;
 $SIG{USR1} = \&sigUsr1Handler;
@@ -750,7 +750,7 @@ sub cbLobbyConnect {
 
   my $localLanIp=$conf{localLanIp};
   $localLanIp=getLocalLanIp() unless($localLanIp);
-  queueLobbyCommand(["LOGIN",$conf{lobbyLogin},$lobby->marshallPasswd($conf{lobbyPassword}),getCpuSpeed(),$localLanIp,"SpringLobbyBot v$SpringLobbyBotVer",0,'a b sp et'],
+  queueLobbyCommand(["LOGIN",$conf{lobbyLogin},$lobby->marshallPasswd($conf{lobbyPassword}),getCpuSpeed(),$localLanIp,"SpringLobbyBot v$SpringLobbyBotVer",0,'l t b sp cl'],
                     {ACCEPTED => \&cbLoginAccepted,
                      DENIED => \&cbLoginDenied,
                      AGREEMENTEND => \&cbAgreementEnd},
@@ -903,8 +903,14 @@ sub cbSaidPrivate {
 }
 
 sub cbChannelTopic {
-  my (undef,$chan,$user,$time,$topic)=@_;
-  logMsg("channel_$chan","* Topic is '$topic' (set by $user)") if($conf{logChanChat});
+  my (undef,$chan,$user,$topic)=@_;
+  if($conf{logChanChat}) {
+    if(defined $topic && $topic ne '') {
+      logMsg("channel_$chan","* Topic is '$topic' (set by $user)");
+    }else{
+      logMsg("channel_$chan","* No topic is set");
+    }
+  }
 }
 
 # Main ########################################################################
