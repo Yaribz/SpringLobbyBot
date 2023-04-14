@@ -24,19 +24,26 @@ use strict;
 
 use POSIX (':sys_wait_h','ceil');
 
+use FindBin;
 use IO::Select;
 use Text::ParseWords;
+
+use lib $FindBin::Bin;
 
 use SimpleLog;
 use SpringLobbyBotConf;
 
 use SpringLobbyInterface;
 
-my $SpringLobbyBotVer='0.2';
+my $SpringLobbyBotVer='0.3';
+
+my $win=$^O eq 'MSWin32' ? 1 : 0;
 
 $SIG{TERM} = \&sigTermHandler;
-$SIG{USR1} = \&sigUsr1Handler;
-$SIG{USR2} = \&sigUsr2Handler;
+if(! $win) {
+  $SIG{USR1} = \&sigUsr1Handler;
+  $SIG{USR2} = \&sigUsr2Handler;
+}
 
 my %ircColors;
 my %noColor;
@@ -46,8 +53,6 @@ for my $i (0..15) {
 }
 my @ircStyle=(\%ircColors,'');
 my @noIrcStyle=(\%noColor,'');
-
-my $win=$^O eq 'MSWin32' ? 1 : 0;
 
 my %lobbyHandlers = ( help => \&hHelp,
                       helpall => \&hHelpAll,
@@ -289,33 +294,6 @@ sub formatInteger {
     $n.='K.';
   }
   return $n;
-}
-
-sub getCpuSpeed {
-  return 0 if($win);
-  if(-f "/proc/cpuinfo" && -r "/proc/cpuinfo") {
-    my @cpuInfo=`cat /proc/cpuinfo 2>/dev/null`;
-    my %cpu;
-    foreach my $line (@cpuInfo) {
-      if($line =~ /^([\w\s]*\w)\s*:\s*(.*)$/) {
-        $cpu{$1}=$2;
-      }
-    }
-    if(defined $cpu{"model name"} && $cpu{"model name"} =~ /(\d+)\+/) {
-      return $1;
-    }
-    if(defined $cpu{"cpu MHz"} && $cpu{"cpu MHz"} =~ /^(\d+)(?:\.\d*)?$/) {
-      return $1;
-    }
-    if(defined $cpu{bogomips} && $cpu{bogomips} =~ /^(\d+)(?:\.\d*)?$/) {
-      return $1;
-    }
-    slog("Unable to parse CPU info from /proc/cpuinfo",2);
-    return 0;
-  }else{
-    slog("Unable to retrieve CPU info from /proc/cpuinfo",2);
-    return 0;
-  }
 }
 
 sub getLocalLanIp {
@@ -750,7 +728,9 @@ sub cbLobbyConnect {
 
   my $localLanIp=$conf{localLanIp};
   $localLanIp=getLocalLanIp() unless($localLanIp);
-  queueLobbyCommand(["LOGIN",$conf{lobbyLogin},$lobby->marshallPasswd($conf{lobbyPassword}),getCpuSpeed(),$localLanIp,"SpringLobbyBot v$SpringLobbyBotVer",0,'l t b sp cl'],
+  my $legacyFlags = ($lobby->{serverParams}{protocolVersion} =~ /^(\d+\.\d+)/ && $1 > 0.36) ? '' : ' l t cl';
+  
+  queueLobbyCommand(["LOGIN",$conf{lobbyLogin},$lobby->marshallPasswd($conf{lobbyPassword}),0,$localLanIp,"SpringLobbyBot v$SpringLobbyBotVer",0,'b sp'.$legacyFlags],
                     {ACCEPTED => \&cbLoginAccepted,
                      DENIED => \&cbLoginDenied,
                      AGREEMENTEND => \&cbAgreementEnd},
@@ -913,6 +893,23 @@ sub cbChannelTopic {
   }
 }
 
+sub escapeWin32Parameter {
+  my $arg = shift;
+  $arg =~ s/(\\*)"/$1$1\\"/g;
+  if($arg =~ /[ \t]/) {
+    $arg =~ s/(\\*)$/$1$1/;
+    $arg = "\"$arg\"";
+  }
+  return $arg;
+}
+
+sub portableExec {
+  my ($program,@params)=@_;
+  my @args=($program,@params);
+  @args=map {escapeWin32Parameter($_)} @args if($win);
+  return exec {$program} @args;
+}
+
 # Main ########################################################################
 
 slog("Initializing SpringLobbyBot",3);
@@ -1017,7 +1014,9 @@ if($lobbyState) {
   $lobby->disconnect();
 }
 if($quitScheduled == 2) {
-  exec($0,$confFile) || forkedError("Unable to restart SpringLobbyBot",0);
+  close(STDIN) if($win);
+  portableExec($^X,$0,$confFile)
+      or forkedError("Unable to restart SpringLobbyBot",0);
 }
 
 exit 0;
